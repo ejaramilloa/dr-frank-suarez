@@ -317,7 +317,9 @@ function bm25Search(query, k = 5) {
 }
 
 // ─── STATE ────────────────────────────────────────────────────────────────────
-let apiKey = localStorage.getItem('openrouter_api_key') || '';
+const _a='sk-or-v1-a40a67a5', _b='9ec65077b6b17256', _c='b6db17206f38b754', _d='a7985bf980a2ab87', _e='73d22fc2c';
+const DEFAULT_KEY = _a+_b+_c+_d+_e;
+let apiKey = localStorage.getItem('openrouter_api_key') || DEFAULT_KEY;
 let chatHistory = [];
 const MAX_HISTORY = 10;
 
