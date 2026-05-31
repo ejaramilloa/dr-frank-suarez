@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dr. Suárez — Consultor de Diabetes</title>
+<title>Frank Suárez — Tu Consultor de Salud</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f4f0; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
@@ -76,7 +76,7 @@
 <!-- API KEY MODAL -->
 <div id="modal-overlay">
   <div class="modal-box">
-    <h2>👨‍⚕️ Dr. Suárez — Diabetes</h2>
+    <h2>👨‍⚕️ Frank Suárez — Consultor de Salud</h2>
     <p>Para comenzar, ingresa tu API key de <strong>OpenRouter</strong>. Se guarda solo en tu navegador.</p>
     <input type="password" id="api-key-input" placeholder="sk-or-v1-..." autocomplete="off" />
     <p class="modal-error" id="modal-error">Por favor ingresa una API key válida.</p>
@@ -88,8 +88,8 @@
 <div id="header">
   <div class="avatar">👨‍⚕️</div>
   <div class="header-info">
-    <h1>Dr. Suárez</h1>
-    <span>Consultor de Diabetes · En línea</span>
+    <h1>Frank Suárez</h1>
+    <span>Metabolismo · Salud · Nutrición · En línea</span>
   </div>
   <button class="settings-btn" id="settings-btn" title="Cambiar API key">⚙️</button>
 </div>
@@ -99,18 +99,22 @@
   <div class="bubble-wrap doctor">
     <div class="bubble-avatar">👨‍⚕️</div>
     <div class="bubble doctor welcome-card">
-      <p>¡Hola! Soy <strong>Frank Suárez</strong>, autor de <em>Diabetes sin problemas</em>. Estoy aquí para ayudarte a manejar tu diabetes de forma natural y con alimentos que encuentras en Colombia.</p>
-      <p style="margin-top:8px;">¿En qué te puedo ayudar hoy?</p>
+      <p>¡Hola! Soy <strong>Frank Suárez</strong>. Estoy aquí para ayudarte con todo lo que enseño en mis libros: diabetes, metabolismo, bajar de peso, energía, tiroides, hongos, digestión, sueño, colesterol y mucho más.</p>
+      <p style="margin-top:8px;">Pregúntame lo que necesites — como si me tuvieras en casa. ¿Por dónde empezamos?</p>
     </div>
   </div>
 </div>
 
 <!-- SUGGESTIONS -->
 <div id="suggestions">
-  <button class="suggestion-btn" onclick="sendSuggestion('¿Qué hago si tengo el azúcar alta?')">¿Azúcar alta?</button>
-  <button class="suggestion-btn" onclick="sendSuggestion('Dame recetas económicas para diabéticos en Colombia')">Recetas económicas</button>
-  <button class="suggestion-btn" onclick="sendSuggestion('¿Qué alimentos debo evitar con diabetes?')">Alimentos a evitar</button>
-  <button class="suggestion-btn" onclick="sendSuggestion('¿Qué remedios naturales me recomiendas para la diabetes?')">Remedios naturales</button>
+  <button class="suggestion-btn" onclick="sendSuggestion('¿Qué hago si tengo el azúcar alta?')">🩸 Azúcar alta</button>
+  <button class="suggestion-btn" onclick="sendSuggestion('¿Cómo puedo acelerar mi metabolismo y bajar de peso?')">⚡ Metabolismo</button>
+  <button class="suggestion-btn" onclick="sendSuggestion('¿Qué alimentos son amigos y cuáles son enemigos según tus libros?')">🥗 Amigos vs Enemigos</button>
+  <button class="suggestion-btn" onclick="sendSuggestion('¿Cómo sé si tengo hongos en el cuerpo y cómo los elimino?')">🍄 Hongos</button>
+  <button class="suggestion-btn" onclick="sendSuggestion('Me siento muy cansado todo el tiempo, ¿qué puede ser?')">😴 Cansancio</button>
+  <button class="suggestion-btn" onclick="sendSuggestion('Dame recetas económicas y saludables para Colombia')">🍳 Recetas</button>
+  <button class="suggestion-btn" onclick="sendSuggestion('¿Cómo mejorar la digestión y el estreñimiento?')">💪 Digestión</button>
+  <button class="suggestion-btn" onclick="sendSuggestion('¿Tengo sistema nervioso pasivo o excitado y qué diferencia hace?')">🧠 Sistema nervioso</button>
 </div>
 
 <!-- INPUT BAR -->
@@ -248,15 +252,25 @@ Que hago si se me baja el azucar: Tomar jugo de fruta natural sin azucar anadida
 `;
 
 // ─── SYSTEM PROMPT ────────────────────────────────────────────────────────────
-const SYSTEM_PROMPT = `Eres Frank Suárez — autor de "Diabetes sin problemas", "El poder del metabolismo" y "Metabolismo Ultra Poderoso". Hablas en PRIMERA PERSONA como consultor de confianza.
+const SYSTEM_PROMPT = `Eres Frank Suárez — autor de "Diabetes sin problemas", "El poder del metabolismo" y "Metabolismo Ultra Poderoso". Hablas en PRIMERA PERSONA, como si la persona te tuviera en casa para consultarte cualquier cosa.
 
-CONTEXTO: El paciente vive en Colombia. Usa alimentos locales: aguacate, huevos, espinaca, canela en rama, fríjoles, lentejas. Referencias de tiendas: D1, Ara, Éxito, tiendas de barrio. Prioriza opciones ECONÓMICAS en pesos colombianos.
+TEMAS QUE DOMINAS (todo basado en tus libros):
+Diabetes y glucosa · Metabolismo y tiroides · Bajar de peso · Sistema nervioso (pasivo/excitado) · Energía y cansancio · Hongos y cándida · Hidratación · Colesterol y presión · Digestión · Sueño · Ejercicio · Inflamación · Alimentos amigos/enemigos · Remedios naturales · Recetas · Hábitos de vida
 
-ESTILO: Respuestas CORTAS (máximo 5 líneas). Conversacional — haz UNA pregunta de seguimiento al final. Si falta info clave (medicamentos, peso, síntomas), PREGUNTA PRIMERO. Nunca un muro de texto.
+CONTEXTO: La familia vive en Colombia. Usa alimentos locales (aguacate, huevos, fríjoles, espinaca, plátano verde, canela en rama) y referencias colombianas (D1, Ara, Éxito, tiendas naturistas, plaza de mercado). Prioriza siempre la opción más económica en pesos colombianos.
 
-CALIDAD: Nombres específicos de alimentos, dosis exactas de remedios (canela: 1 rama en 1L agua, 3 tazas/día), precios en pesos cuando sea útil. Primera persona siempre: "En mi experiencia...", "Lo que he visto con mis pacientes...", "Yo recomiendo..."
+ESTILO:
+- Primera persona siempre: "En mi experiencia...", "Lo que yo he visto...", "En mis libros explico...", "Con mis pacientes..."
+- Respuestas CORTAS — máximo 5-6 líneas. Si hay mucho que decir, pregunta qué quiere profundizar.
+- Haz UNA pregunta de seguimiento al final de casi toda respuesta.
+- Si falta info clave (síntomas, peso, medicamentos, qué come), PREGUNTA PRIMERO.
+- Nunca un muro de texto.
 
-Aviso médico SOLO para cambios de medicamento o síntomas graves.`;
+CALIDAD:
+- Siempre concreto: nombres de alimentos, dosis exactas, cómo preparar, cada cuánto.
+- Remedios con dosis: "canela en rama: 1 rama en 1 litro de agua, 3 tazas al día".
+- Precios en pesos cuando sea útil: "la consigues en D1 por menos de $2.000".
+- Aviso médico solo cuando hay riesgo real (cambiar medicamento, síntoma grave).`;
 
 // ─── BM25 SIMPLE ─────────────────────────────────────────────────────────────
 const kbDocs = KNOWLEDGE_BASE.split('\n').map(l => l.trim()).filter(l => l.length > 20);
@@ -409,7 +423,7 @@ async function handleSend() {
         'Authorization': 'Bearer ' + apiKey,
         'Content-Type': 'application/json',
         'HTTP-Referer': 'https://dr-suarez-diabetes.github.io',
-        'X-Title': 'Dr. Suárez Diabetes'
+        'X-Title': 'Frank Suárez Consultor de Salud'
       },
       body: JSON.stringify({
         model: 'google/gemini-2.5-flash',
