@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Frank Suárez — Tu Consultor de Salud</title>
+<title>Dr. Frank Suárez</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f4f0; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
@@ -76,7 +76,7 @@
 <!-- API KEY MODAL -->
 <div id="modal-overlay">
   <div class="modal-box">
-    <h2>👨‍⚕️ Frank Suárez — Consultor de Salud</h2>
+    <h2>👨‍⚕️ Dr. Frank Suárez</h2>
     <p>Para comenzar, ingresa tu API key de <strong>OpenRouter</strong>. Se guarda solo en tu navegador.</p>
     <input type="password" id="api-key-input" placeholder="sk-or-v1-..." autocomplete="off" />
     <p class="modal-error" id="modal-error">Por favor ingresa una API key válida.</p>
@@ -88,7 +88,7 @@
 <div id="header">
   <div class="avatar">👨‍⚕️</div>
   <div class="header-info">
-    <h1>Frank Suárez</h1>
+    <h1>Dr. Frank Suárez</h1>
     <span>Metabolismo · Salud · Nutrición · En línea</span>
   </div>
   <button class="settings-btn" id="settings-btn" title="Cambiar API key">⚙️</button>
@@ -99,7 +99,7 @@
   <div class="bubble-wrap doctor">
     <div class="bubble-avatar">👨‍⚕️</div>
     <div class="bubble doctor welcome-card">
-      <p>¡Hola! Soy <strong>Frank Suárez</strong>. Estoy aquí para ayudarte con todo lo que enseño en mis libros: diabetes, metabolismo, bajar de peso, energía, tiroides, hongos, digestión, sueño, colesterol y mucho más.</p>
+      <p>¡Hola! Soy el <strong>Dr. Frank Suárez</strong>. Estoy aquí para ayudarte con todo lo que enseño en mis libros: metabolismo, bajar de peso, energía, tiroides, hongos, digestión, sueño, colesterol y mucho más.</p>
       <p style="margin-top:8px;">Pregúntame lo que necesites — como si me tuvieras en casa. ¿Por dónde empezamos?</p>
     </div>
   </div>
@@ -431,7 +431,7 @@ async function handleSend() {
         'Authorization': 'Bearer ' + apiKey,
         'Content-Type': 'application/json',
         'HTTP-Referer': 'https://dr-suarez-diabetes.github.io',
-        'X-Title': 'Frank Suárez Consultor de Salud'
+        'X-Title': 'Dr. Frank Suárez'
       },
       body: JSON.stringify({
         model: 'google/gemini-2.5-flash',
