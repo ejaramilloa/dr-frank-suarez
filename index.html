@@ -78,10 +78,11 @@
 <div id="modal-overlay" class="hidden">
   <div class="modal-box">
     <h2>👨‍⚕️ Dr. Frank Suárez</h2>
-    <p>Para comenzar, ingresa tu API key de <strong>OpenRouter</strong>. Se guarda solo en tu navegador.</p>
+    <p>Configuración inicial — solo se hace <strong>una vez en este dispositivo</strong>.</p>
+    <p style="margin-top:6px;font-size:0.8rem;color:#777;">Ingresa tu API key de OpenRouter. Se guarda en este celular y no se vuelve a pedir.</p>
     <input type="password" id="api-key-input" placeholder="sk-or-v1-..." autocomplete="off" />
     <p class="modal-error" id="modal-error">Por favor ingresa una API key válida.</p>
-    <button id="save-key-btn">Comenzar consulta</button>
+    <button id="save-key-btn">Guardar y comenzar</button>
   </div>
 </div>
 
@@ -337,9 +338,7 @@ function bm25Search(query, k = 5) {
 }
 
 // ─── STATE ────────────────────────────────────────────────────────────────────
-const _a='sk-or-v1-a40a67a5', _b='9ec65077b6b17256', _c='b6db17206f38b754', _d='a7985bf980a2ab87', _e='73d22fc2c';
-const DEFAULT_KEY = _a+_b+_c+_d+_e;
-let apiKey = localStorage.getItem('openrouter_api_key') || DEFAULT_KEY;
+let apiKey = localStorage.getItem('openrouter_api_key') || '';
 let chatHistory = [];
 const MAX_HISTORY = 10;
 
