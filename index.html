@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dr. Suárez — Consultor de Diabetes</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f4f0; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
+
+  /* MODAL */
+  #modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 16px; }
+  #modal-overlay.hidden { display: none; }
+  .modal-box { background: #fff; border-radius: 16px; padding: 28px 24px; width: 100%; max-width: 380px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+  .modal-box h2 { color: #1a5c2e; font-size: 1.2rem; margin-bottom: 8px; }
+  .modal-box p { color: #555; font-size: 0.85rem; margin-bottom: 18px; line-height: 1.5; }
+  .modal-box input { width: 100%; border: 1.5px solid #c8e6c9; border-radius: 10px; padding: 12px 14px; font-size: 0.9rem; outline: none; transition: border-color 0.2s; }
+  .modal-box input:focus { border-color: #2e7d32; }
+  .modal-box button { width: 100%; margin-top: 14px; background: #2e7d32; color: #fff; border: none; border-radius: 10px; padding: 13px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+  .modal-box button:hover { background: #1b5e20; }
+  .modal-error { color: #c62828; font-size: 0.8rem; margin-top: 8px; display: none; }
+
+  /* HEADER */
+  #header { background: #1b5e20; color: #fff; padding: 12px 16px; display: flex; align-items: center; gap: 12px; flex-shrink: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+  .avatar { font-size: 2rem; background: #2e7d32; border-radius: 50%; width: 46px; height: 46px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .header-info { flex: 1; }
+  .header-info h1 { font-size: 1rem; font-weight: 700; }
+  .header-info span { font-size: 0.75rem; color: #a5d6a7; }
+  .settings-btn { background: none; border: none; color: #a5d6a7; font-size: 1.3rem; cursor: pointer; padding: 4px; border-radius: 8px; transition: background 0.2s; }
+  .settings-btn:hover { background: rgba(255,255,255,0.1); }
+
+  /* MESSAGES */
+  #messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+  #messages::-webkit-scrollbar { width: 4px; }
+  #messages::-webkit-scrollbar-thumb { background: #c8e6c9; border-radius: 4px; }
+
+  .bubble-wrap { display: flex; align-items: flex-end; gap: 8px; }
+  .bubble-wrap.user { flex-direction: row-reverse; }
+  .bubble-wrap.doctor { flex-direction: row; }
+
+  .bubble-avatar { font-size: 1.4rem; flex-shrink: 0; }
+  .bubble { max-width: 78%; padding: 11px 15px; border-radius: 18px; font-size: 0.9rem; line-height: 1.55; word-wrap: break-word; }
+  .bubble.user { background: #2e7d32; color: #fff; border-bottom-right-radius: 4px; }
+  .bubble.doctor { background: #fff; color: #212121; border-bottom-left-radius: 4px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+  .bubble .timestamp { font-size: 0.7rem; opacity: 0.6; margin-top: 5px; text-align: right; }
+
+  /* TYPING */
+  .typing-indicator { display: flex; gap: 5px; align-items: center; padding: 14px 16px; }
+  .typing-indicator span { width: 8px; height: 8px; background: #9e9e9e; border-radius: 50%; animation: bounce 1.2s infinite; }
+  .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+  .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes bounce { 0%,60%,100% { transform: translateY(0); } 30% { transform: translateY(-6px); } }
+
+  /* SUGGESTIONS */
+  #suggestions { padding: 6px 16px 10px; display: flex; gap: 8px; overflow-x: auto; flex-shrink: 0; }
+  #suggestions::-webkit-scrollbar { display: none; }
+  .suggestion-btn { white-space: nowrap; background: #fff; border: 1.5px solid #c8e6c9; border-radius: 20px; padding: 7px 13px; font-size: 0.8rem; color: #2e7d32; cursor: pointer; transition: all 0.2s; flex-shrink: 0; font-weight: 500; }
+  .suggestion-btn:hover, .suggestion-btn:active { background: #e8f5e9; border-color: #2e7d32; }
+
+  /* INPUT */
+  #input-bar { background: #fff; padding: 10px 12px; display: flex; gap: 8px; align-items: flex-end; flex-shrink: 0; border-top: 1px solid #e8f5e9; box-shadow: 0 -2px 8px rgba(0,0,0,0.06); }
+  #user-input { flex: 1; border: 1.5px solid #c8e6c9; border-radius: 22px; padding: 10px 16px; font-size: 0.9rem; resize: none; outline: none; max-height: 100px; line-height: 1.4; font-family: inherit; transition: border-color 0.2s; }
+  #user-input:focus { border-color: #2e7d32; }
+  #send-btn { background: #2e7d32; border: none; border-radius: 50%; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.2s; flex-shrink: 0; }
+  #send-btn:hover { background: #1b5e20; }
+  #send-btn:disabled { background: #a5d6a7; cursor: not-allowed; }
+  #send-btn svg { width: 18px; height: 18px; fill: #fff; }
+
+  .welcome-card { background: #fff; border-radius: 16px; padding: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border-left: 4px solid #2e7d32; }
+  .welcome-card p { color: #333; font-size: 0.88rem; line-height: 1.6; }
+  .welcome-card strong { color: #1b5e20; }
+</style>
+</head>
+<body>
+
+<!-- API KEY MODAL -->
+<div id="modal-overlay">
+  <div class="modal-box">
+    <h2>👨‍⚕️ Dr. Suárez — Diabetes</h2>
+    <p>Para comenzar, ingresa tu API key de <strong>OpenRouter</strong>. Se guarda solo en tu navegador.</p>
+    <input type="password" id="api-key-input" placeholder="sk-or-v1-..." autocomplete="off" />
+    <p class="modal-error" id="modal-error">Por favor ingresa una API key válida.</p>
+    <button id="save-key-btn">Comenzar consulta</button>
+  </div>
+</div>
+
+<!-- HEADER -->
+<div id="header">
+  <div class="avatar">👨‍⚕️</div>
+  <div class="header-info">
+    <h1>Dr. Suárez</h1>
+    <span>Consultor de Diabetes · En línea</span>
+  </div>
+  <button class="settings-btn" id="settings-btn" title="Cambiar API key">⚙️</button>
+</div>
+
+<!-- MESSAGES -->
+<div id="messages">
+  <div class="bubble-wrap doctor">
+    <div class="bubble-avatar">👨‍⚕️</div>
+    <div class="bubble doctor welcome-card">
+      <p>¡Hola! Soy <strong>Frank Suárez</strong>, autor de <em>Diabetes sin problemas</em>. Estoy aquí para ayudarte a manejar tu diabetes de forma natural y con alimentos que encuentras en Colombia.</p>
+      <p style="margin-top:8px;">¿En qué te puedo ayudar hoy?</p>
+    </div>
+  </div>
+</div>
+
+<!-- SUGGESTIONS -->
+<div id="suggestions">
+  <button class="suggestion-btn" onclick="sendSuggestion('¿Qué hago si tengo el azúcar alta?')">¿Azúcar alta?</button>
+  <button class="suggestion-btn" onclick="sendSuggestion('Dame recetas económicas para diabéticos en Colombia')">Recetas económicas</button>
+  <button class="suggestion-btn" onclick="sendSuggestion('¿Qué alimentos debo evitar con diabetes?')">Alimentos a evitar</button>
+  <button class="suggestion-btn" onclick="sendSuggestion('¿Qué remedios naturales me recomiendas para la diabetes?')">Remedios naturales</button>
+</div>
+
+<!-- INPUT BAR -->
+<div id="input-bar">
+  <textarea id="user-input" placeholder="Escribe tu consulta..." rows="1"></textarea>
+  <button id="send-btn" onclick="handleSend()">
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+  </button>
+</div>
+
+<script>
+// ─── KNOWLEDGE BASE ───────────────────────────────────────────────────────────
+const KNOWLEDGE_BASE = `# REFERENCIA MAESTRA — Libros de Frank Suárez
+
+## ALIMENTOS AMIGOS
+Dieta AA: plan de alimentacion que solo incluye Alimentos Tipo A (AMIGOS del control de la diabetes) utilizado para desintoxicar el cuerpo de la adiccion a los carbohidratos y regular la glucosa.
+Alimentos Tipo A: alimentos que ayudan a controlar la diabetes, eliminando la posibilidad de exceso de glucosa y evitando hipoglucemia.
+Alimentos Tipo E: carbohidratos refinados (arroz, pan, avena, chocolates, etc.) que son considerados ENEMIGOS del control de la diabetes y son adictivos.
+Alimento Tipo A (Amigo): ayudan a desintoxicar el cuerpo de la adiccion a los carbohidratos y a mantener la glucosa en niveles normales.
+Concepto: Alimentos Tipo A (Amigos) provocan que el cuerpo produzca menos insulina y ADELGAZAN.
+Concepto: Alimentos Tipo E (Enemigos) provocan que el cuerpo produzca mas insulina y ENGORDAN.
+Alimentos Tipo A: Ayudan a mejorar el metabolismo y controlan los niveles de azucar en sangre, eliminando los bajones de azucar como la hipoglucemia.
+Dieta AA: Plan de alimentacion que utiliza solamente Alimentos Tipo A para desintoxicar de la adiccion a los carbohidratos.
+Alimentos Tipo A AMIGOS del control de la diabetes: Son alimentos que ayudan a reducir de forma marcada los niveles de glucosa en la sangre y eliminan alimentos que causan antojos o adiccion.
+Producto a base de magnesio MAGICMAG: Dosis diaria de 1 a 2 cucharaditas. Se consume directamente, tiene un efecto relajante y anti-estres sobre el sistema nervioso y hormonal del cuerpo.
+Alimentos Tipo A: libres para consumir en la Dieta AA. No elevan la glucosa. No demandan insulina elevada.
+Alimentos Tipo E: son carbohidratos refinados y alimentos que elevan la glucosa y demandan insulina elevada.
+Alimentos Tipo A: Amigo del control de la diabetes. Efecto: Ayuda a mantener los niveles de glucosa en su rango normal de 70 mg/dl a 130 mg/dl.
+Alimentos Tipo E: Enemigo del control de la diabetes. Efecto: Perjudica el control de la diabetes y puede contribuir al aumento de peso.
+
+Aves y pescados (todos Amigos):
+Pollo, pavo, codorniz, dorado, mero, chillo, salmon, tilapia, bacalao, rodaballo, capitan, sierra, merluza, atun
+
+Mariscos (todos Amigos):
+Carne de cangrejo, camarones, juey, pulpo, calamar, ostras, carrucho, langosta, vieiras, mejillones, almejas
+
+Quesos (todos Amigos):
+Blanco del pais, cheddar, americano, suizo, gouda, edam, parmesano, ricotta, mozzarella, monterrey, provolone, muenster
+
+Huevos: Amigos del control de la diabetes. Ricos en proteina. No elevan la glucosa. Recomendados revueltos con aguacate o espinaca.
+
+Vegetales verdes Amigos:
+Espinaca, lechuga, brocoli, repollo, apio, pepino, vainitas, calabacin, espárragos, coliflor, berenjena, pimentón, champiñones
+
+Grasas Amigas:
+Aguacate: bajo en carbohidratos y rico en grasas saludables. Barato en Colombia, disponible en D1 y Ara.
+Aceite de oliva, aceite de coco, aceite de aguacate: grasas saludables que no elevan la glucosa.
+
+Canela: contiene hydroxychalcone que estimula los receptores de insulina y reduce glucosa en ayuno.
+Dosis canela: 1 rama en 1 litro de agua, hervir 10 minutos, tomar 3 tazas al dia. O media a una cucharadita en polvo al dia.
+Canela en rama disponible en tiendas de barrio y D1 en Colombia. Muy economica.
+
+MagicMag magnesio: esencial para el control de la diabetes. Todos los diabeticos estan deficientes de magnesio.
+Magnesio, cinc, selenio: ayudan a lograr un metabolismo optimo y controlar la glucosa.
+
+Ajo: reduce la presion arterial. 1 a 2 dientes al dia crudos o cocidos. Disponible en todas las tiendas de Colombia.
+Canela + ajo juntos pueden reducir glucosa en ayuno en 2 a 4 semanas de uso consistente.
+
+KADSORB citrato de potasio: 2 capsulas por cada 25 libras de peso corporal al dia.
+Capsulas de potasio: 99 miligramos por capsula.
+
+Frijoles y lentejas: fuentes de proteina y fibra. En moderacion son aceptables para diabeticos. Disponibles en D1 y Ara muy economicos.
+
+## ALIMENTOS ENEMIGOS
+Harinas, azucar, frutas dulces, almidones como arroz y papa: elevan la produccion de insulina y deben evitarse.
+Cafe, chocolates, dulces, nicotina: estimulantes que afectan el control de la glucosa.
+Carbohidratos refinados, almidones, azucares: aumentan glucosa y contribuyen a la obesidad.
+Pan blanco, arepa de maiz, arroz blanco, papa, platano maduro: suben la glucosa rapidamente. Reducir o eliminar.
+Frutas altas en fructosa a evitar: mango, pina, guineo, papaya, china naranja, pera, melon, frutas secas, pasas, higos, frutas enlatadas en almibar.
+Excepciones Amigas: fresas y manzanas especialmente la verde son bajas en fructosa y aceptables en moderacion.
+Avena instantanea, cereales de caja, crema de harina de arroz: suben la glucosa rapidamente.
+Azucar, aspartame, gluten, soya, carbohidratos refinados: enemigos del metabolismo.
+Margarina: contiene acidos transgrasos. Reduce metabolismo, aumenta colesterol. Usar mantequilla real en su lugar.
+Jarabe de maiz de alta fructosa: mas danino que el azucar comun. Causa obesidad, diabetes, acido urico. Presente en muchos refrescos y jugos envasados.
+Fructosa en exceso: puede convertirse en veneno para el higado y el metabolismo.
+Aspartame: puede causar convulsiones, aumento de peso, migranas. Evitar bebidas diet con aspartame.
+Jugos de fruta envasados: aunque parecen saludables, tienen alta concentracion de fructosa. Evitar.
+Bebidas gaseosas y refrescos: elevan glucosa rapidamente. Evitar completamente.
+
+## CONTROL DE GLUCOSA
+Glucosa normal en ayuno: entre 70 mg/dl y 100 mg/dl.
+Glucosa normal postprandial 2 horas despues de comer: menos de 140 mg/dl.
+Prediabetes: glucosa en ayuno entre 100 y 125 mg/dl.
+Diabetes tipo 2: glucosa en ayuno mayor a 126 mg/dl en dos pruebas.
+Hipoglucemia azucar baja: glucosa menor a 70 mg/dl. Sintomas: temblores, sudoracion, confusion, mareos.
+Hiperglucemia azucar alta: glucosa mayor a 180 mg/dl. Sintomas: sed excesiva, orinar mucho, fatiga, vision borrosa.
+
+Protocolo para bajar glucosa alta rapidamente:
+1. Tomar 2 vasos de agua de inmediato.
+2. Caminar 10 a 15 minutos suave.
+3. Tomar te de canela en rama.
+4. Evitar carbohidratos en la proxima comida.
+5. Comer proteina con vegetales verdes en la siguiente comida.
+
+## RECETAS ECONOMICAS COLOMBIA
+Desayuno economico Amigo:
+2 huevos revueltos con espinaca y aguacate. Costo aproximado: 3000 a 4000 pesos colombianos. Disponible en D1 o Ara.
+
+Almuerzo Amigo:
+Pechuga de pollo a la plancha con ensalada verde lechuga tomate pepino y aceite de oliva. Costo: 6000 a 8000 pesos. Proteina barata en D1.
+
+Cena Amigo:
+Filete de tilapia con brocoli al vapor y aguacate. Costo: 7000 a 9000 pesos. Tilapia disponible en Exito y tiendas de barrio.
+
+Sopa Amiga:
+Caldo de pollo con verduras sin papa ni arroz. Agregar espinaca, apio, zanahoria, cebolla. Economico y llenador.
+
+Snack Amigo:
+Nueces o almendras un puñado pequeno. O pepino con limon y sal. O aguacate solo con sal.
+
+Te de canela Colombia:
+1 rama de canela en 1 litro de agua. Hervir 10 minutos. Colar. Tomar frio o caliente. 3 tazas al dia. Rama de canela cuesta 500 a 1000 pesos en tiendas de barrio.
+
+## METABOLISMO Y PESO
+Metabolismo lento causas principales: falta de sueno, estres, falta de ejercicio, hipotiroidismo, deficiencia de magnesio.
+Metabolismo rapido: permite quemar grasa, controlar glucosa, tener energia alta.
+Ejercicio recomendado para diabeticos: caminar 30 minutos al dia. Es lo mas efectivo y economico.
+Sueno: dormir 7 a 8 horas es fundamental para el control de la glucosa y el metabolismo.
+Agua: tomar 8 vasos de agua al dia ayuda a eliminar el exceso de glucosa por la orina.
+Estres: el cortisol eleva la glucosa. Tecnicas de relajacion, respiracion profunda y descanso son clave.
+
+## SUPLEMENTOS RECOMENDADOS
+Magnesio MagicMag: 1 a 2 cucharaditas al dia. Deficiencia de magnesio es universal en diabeticos.
+Vitamina D: la mayoria de diabeticos estan deficientes. Ayuda a mejorar sensibilidad a la insulina.
+Omega 3: reduce inflamacion y mejora el perfil lipidico. Fuentes naturales: salmon, sardinas, semillas de lino.
+Cromo: mejora la sensibilidad a la insulina. Presente en brocoli, carne, huevos.
+Zinc: importante para la produccion y funcionamiento de la insulina. Presente en carnes, mariscos, semillas.
+
+## PREGUNTAS FRECUENTES
+Puedo comer arroz siendo diabetico: No o muy poco. El arroz blanco sube la glucosa rapidamente. Mejor cauliflower rice o arroz de coliflor.
+Puedo comer fruta siendo diabetico: Solo frutas bajas en fructosa como fresas y manzana verde. En porciones pequenas.
+La canela realmente funciona para la diabetes: Si, en mi experiencia y en la evidencia cientifica. La hydroxychalcone de la canela imita la accion de la insulina. Usarla consistentemente por minimo 4 semanas para ver resultados.
+Cual es la mejor dieta para diabeticos: La Dieta AA con alimentos Tipo A. Eliminar completamente azucar, harinas, arroz, pan, cereales. Comer proteinas, grasas saludables y vegetales verdes.
+Que hago si se me baja el azucar: Tomar jugo de fruta natural sin azucar anadida o comer una fruta pequena. Despues comer algo con proteina para estabilizar.
+`;
+
+// ─── SYSTEM PROMPT ────────────────────────────────────────────────────────────
+const SYSTEM_PROMPT = `Eres Frank Suárez — autor de "Diabetes sin problemas", "El poder del metabolismo" y "Metabolismo Ultra Poderoso". Hablas en PRIMERA PERSONA como consultor de confianza.
+
+CONTEXTO: El paciente vive en Colombia. Usa alimentos locales: aguacate, huevos, espinaca, canela en rama, fríjoles, lentejas. Referencias de tiendas: D1, Ara, Éxito, tiendas de barrio. Prioriza opciones ECONÓMICAS en pesos colombianos.
+
+ESTILO: Respuestas CORTAS (máximo 5 líneas). Conversacional — haz UNA pregunta de seguimiento al final. Si falta info clave (medicamentos, peso, síntomas), PREGUNTA PRIMERO. Nunca un muro de texto.
+
+CALIDAD: Nombres específicos de alimentos, dosis exactas de remedios (canela: 1 rama en 1L agua, 3 tazas/día), precios en pesos cuando sea útil. Primera persona siempre: "En mi experiencia...", "Lo que he visto con mis pacientes...", "Yo recomiendo..."
+
+Aviso médico SOLO para cambios de medicamento o síntomas graves.`;
+
+// ─── BM25 SIMPLE ─────────────────────────────────────────────────────────────
+const kbDocs = KNOWLEDGE_BASE.split('\n').map(l => l.trim()).filter(l => l.length > 20);
+
+function tokenize(text) {
+  return text.toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .split(/\s+/).filter(t => t.length > 2);
+}
+
+function bm25Search(query, k = 5) {
+  const queryTokens = tokenize(query);
+  if (!queryTokens.length) return [];
+  const k1 = 1.5, b = 0.75;
+  const avgDocLen = kbDocs.reduce((s, d) => s + tokenize(d).length, 0) / kbDocs.length;
+  const idfMap = {};
+  queryTokens.forEach(qt => {
+    const df = kbDocs.filter(d => tokenize(d).includes(qt)).length;
+    idfMap[qt] = Math.log((kbDocs.length - df + 0.5) / (df + 0.5) + 1);
+  });
+  const scores = kbDocs.map((doc, i) => {
+    const tokens = tokenize(doc);
+    const dl = tokens.length;
+    let score = 0;
+    queryTokens.forEach(qt => {
+      const tf = tokens.filter(t => t === qt).length;
+      const num = tf * (k1 + 1);
+      const den = tf + k1 * (1 - b + b * dl / avgDocLen);
+      score += idfMap[qt] * (num / den);
+    });
+    return { doc, score };
+  });
+  return scores.sort((a, b) => b.score - a.score).slice(0, k).filter(r => r.score > 0).map(r => r.doc);
+}
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let apiKey = localStorage.getItem('openrouter_api_key') || '';
+let chatHistory = [];
+const MAX_HISTORY = 10;
+
+// ─── DOM READY ────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  if (!apiKey) showModal();
+  document.getElementById('save-key-btn').addEventListener('click', saveApiKey);
+  document.getElementById('api-key-input').addEventListener('keydown', e => { if (e.key === 'Enter') saveApiKey(); });
+  document.getElementById('settings-btn').addEventListener('click', showModal);
+  const input = document.getElementById('user-input');
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
+  });
+  input.addEventListener('input', () => {
+    input.style.height = 'auto';
+    input.style.height = Math.min(input.scrollHeight, 100) + 'px';
+  });
+});
+
+function showModal() {
+  const overlay = document.getElementById('modal-overlay');
+  overlay.classList.remove('hidden');
+  document.getElementById('api-key-input').value = apiKey || '';
+  document.getElementById('modal-error').style.display = 'none';
+  setTimeout(() => document.getElementById('api-key-input').focus(), 100);
+}
+
+function saveApiKey() {
+  const val = document.getElementById('api-key-input').value.trim();
+  if (!val || val.length < 10) {
+    document.getElementById('modal-error').style.display = 'block';
+    return;
+  }
+  apiKey = val;
+  localStorage.setItem('openrouter_api_key', apiKey);
+  document.getElementById('modal-overlay').classList.add('hidden');
+}
+
+function sendSuggestion(text) {
+  document.getElementById('suggestions').style.display = 'none';
+  document.getElementById('user-input').value = text;
+  handleSend();
+}
+
+function getTime() {
+  return new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+}
+
+function appendBubble(role, text) {
+  const messages = document.getElementById('messages');
+  const wrap = document.createElement('div');
+  wrap.className = `bubble-wrap ${role}`;
+  const avatar = document.createElement('div');
+  avatar.className = 'bubble-avatar';
+  avatar.textContent = role === 'user' ? '🧑' : '👨‍⚕️';
+  const bubble = document.createElement('div');
+  bubble.className = `bubble ${role}`;
+  bubble.innerHTML = escapeHtml(text).replace(/\n/g, '<br>') + `<div class="timestamp">${getTime()}</div>`;
+  if (role === 'user') { wrap.appendChild(bubble); wrap.appendChild(avatar); }
+  else { wrap.appendChild(avatar); wrap.appendChild(bubble); }
+  messages.appendChild(wrap);
+  messages.scrollTop = messages.scrollHeight;
+}
+
+function escapeHtml(text) {
+  return text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function showTyping() {
+  const messages = document.getElementById('messages');
+  const wrap = document.createElement('div');
+  wrap.className = 'bubble-wrap doctor';
+  wrap.id = 'typing-wrap';
+  const avatar = document.createElement('div');
+  avatar.className = 'bubble-avatar';
+  avatar.textContent = '👨‍⚕️';
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble doctor';
+  bubble.style.padding = '8px 14px';
+  bubble.innerHTML = '<div class="typing-indicator"><span></span><span></span><span></span></div>';
+  wrap.appendChild(avatar);
+  wrap.appendChild(bubble);
+  messages.appendChild(wrap);
+  messages.scrollTop = messages.scrollHeight;
+}
+
+function removeTyping() {
+  const el = document.getElementById('typing-wrap');
+  if (el) el.remove();
+}
+
+async function handleSend() {
+  if (!apiKey) { showModal(); return; }
+  const input = document.getElementById('user-input');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  input.style.height = 'auto';
+  document.getElementById('send-btn').disabled = true;
+  document.getElementById('suggestions').style.display = 'none';
+  appendBubble('user', text);
+  chatHistory.push({ role: 'user', content: text });
+  if (chatHistory.length > MAX_HISTORY) chatHistory = chatHistory.slice(-MAX_HISTORY);
+  showTyping();
+  try {
+    const relevant = bm25Search(text, 5);
+    const context = relevant.length ? '\n\nCONTEXTO RELEVANTE DEL CONOCIMIENTO:\n' + relevant.join('\n') : '';
+    const systemMsg = { role: 'system', content: SYSTEM_PROMPT + context };
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + apiKey,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://dr-suarez-diabetes.github.io',
+        'X-Title': 'Dr. Suárez Diabetes'
+      },
+      body: JSON.stringify({
+        model: 'google/gemini-2.5-flash',
+        max_tokens: 400,
+        messages: [systemMsg, ...chatHistory]
+      })
+    });
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.error?.message || `HTTP ${response.status}`);
+    }
+    const data = await response.json();
+    const reply = data.choices?.[0]?.message?.content || 'Lo siento, no pude obtener una respuesta.';
+    removeTyping();
+    appendBubble('doctor', reply);
+    chatHistory.push({ role: 'assistant', content: reply });
+    if (chatHistory.length > MAX_HISTORY) chatHistory = chatHistory.slice(-MAX_HISTORY);
+  } catch (err) {
+    removeTyping();
+    let msg = 'Hubo un error al conectar. Verifica tu API key o conexión.';
+    if (err.message.includes('401')) msg = 'API key inválida. Toca ⚙️ para cambiarla.';
+    else if (err.message.includes('429')) msg = 'Demasiadas solicitudes. Espera un momento e intenta de nuevo.';
+    appendBubble('doctor', msg);
+  } finally {
+    document.getElementById('send-btn').disabled = false;
+    document.getElementById('user-input').focus();
+  }
+}
+</script>
+</body>
+</html>
